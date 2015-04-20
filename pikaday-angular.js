@@ -62,6 +62,11 @@
 
         function applyConfig (attr, value) {
           switch (attr) {
+            // Bindings to parent scope
+            case "position":
+              scope.position = value;
+              config[attr] = scope.$parent.$eval(value);
+              break;
 
             // Booleans, Integers & Arrays
 
@@ -99,7 +104,6 @@
             // Strings
 
             case "format":
-            case "position":
             case "theme":
             case "yearSuffix":
 
@@ -131,6 +135,23 @@
 
           }
         }
+
+        // set $watch on position
+        scope.$watch(function(scope) {
+              return scope.$parent.$eval(scope.position);
+          },
+          function(newValue, oldValue) {
+              var isvisible = picker.isVisible();
+
+              picker.destroy();
+
+              config.position = newValue;
+
+              scope.pikaday = picker = new Pikaday(config);
+
+              if(isvisible)
+                  picker.show();
+          });
 
         // instantiate pikaday with config, bind to scope, add destroy event callback
 
