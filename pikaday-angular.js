@@ -32,12 +32,12 @@
   function pikadayDirectiveFn(pikadayConfig) {
 
     return {
-
       restrict: 'A',
+      require: '?ngModel',
       scope: {
         pikaday: '=', onSelect: '&', onOpen: '&', onClose: '&', onDraw: '&', disableDayFn: '&'
       },
-      link: function (scope, elem, attrs) {
+      link: function (scope, elem, attrs, ngModelController) {
 
         // Init config Object
 
@@ -104,6 +104,7 @@
             // Strings
 
             case "format":
+            case "serverFormat":
             case "theme":
             case "yearSuffix":
 
@@ -137,20 +138,33 @@
         }
 
         // set $watch on position
+        if(ngModelController) {
+          ngModelController.$parsers.push(function(value) {
+            value = moment(value, config.format).format(config.serverFormat);
+            return value;
+          });
+
+          ngModelController.$formatters.push(function(value) {
+            value = moment(value, config.serverFormat).format(config.format);
+            return value;
+          });
+        }
+
+        // set $watch on position
         scope.$watch(function(scope) {
-              return scope.$parent.$eval(scope.position);
+            return scope.$parent.$eval(scope.position);
           },
           function(newValue, oldValue) {
-              var isvisible = picker.isVisible();
+            var isvisible = picker.isVisible();
 
-              picker.destroy();
+            picker.destroy();
 
-              config.position = newValue;
+            config.position = newValue;
 
-              scope.pikaday = picker = new Pikaday(config);
+            scope.pikaday = picker = new Pikaday(config);
 
-              if(isvisible)
-                  picker.show();
+            if(isvisible)
+              picker.show();
           });
 
         // instantiate pikaday with config, bind to scope, add destroy event callback
