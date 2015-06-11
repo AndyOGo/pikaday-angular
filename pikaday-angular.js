@@ -140,12 +140,22 @@
         // set $watch on position
         if(ngModelController) {
           ngModelController.$parsers.push(function(value) {
-            value = moment(value, config.format).format(config.serverFormat);
+            var date = moment(value, config.format);
+
+            if(date.isValid()) {
+              value = date.format(config.serverFormat);
+            }
+
             return value;
           });
 
           ngModelController.$formatters.push(function(value) {
-            value = moment(value, config.serverFormat).format(config.format);
+            var date = moment(value, config.serverFormat);
+
+            if(date.isValid()) {
+              value = date.format(config.format);
+            }
+
             return value;
           });
         }
